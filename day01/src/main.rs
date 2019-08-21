@@ -1,6 +1,6 @@
 fn main() {
     let path = "input.txt";
-    let input = std::fs::read_to_string(path).expect("Failed to open: input.txt");
+    let input = std::fs::read_to_string(path).expect(&format!("Failed to open: {}", path));
     let (last_floor, basement_step) = analyze_input(&input);
 
     println!("With input: {}", &input[..]);
