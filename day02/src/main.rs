@@ -66,7 +66,7 @@ fn parse_input(path: &str) -> Vec<Gift> {
     let input = std::fs::read_to_string(path).expect("Failed to open: input.txt");
     let mut gifts = Vec::new();
 
-    for line in input.split("\n") {
+    for line in input.lines() {
         let gift = Gift::new(line);
         gifts.push(gift.unwrap_or_else(|err| panic!("Could not construct a gift: {}", err) ));
     }

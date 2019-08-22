@@ -13,7 +13,7 @@ fn main() {
 }
 
 fn nice_names_v1(raw_list: &str) -> usize {
-    let all_names = raw_list.split("\n");
+    let all_names = raw_list.lines();
     // let nice_names: Vec<&str> = all_names.filter(|i| check_name_v1(&i)).collect();
     let nice_names: Vec<&str> = all_names
         .filter(has_double_letter)
@@ -25,7 +25,7 @@ fn nice_names_v1(raw_list: &str) -> usize {
 }
 
 fn nice_names_v2(raw_list: &str) -> usize {
-    let all_names = raw_list.split("\n");
+    let all_names = raw_list.lines();
     let nice_names: Vec<&str> = all_names
         .filter(name_has_letter_pair)
         .filter(name_has_nonadjacent_repeated_substring)

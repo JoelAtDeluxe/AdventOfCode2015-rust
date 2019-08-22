@@ -22,7 +22,6 @@ fn main() {
     println!("Time to solve: {} ms", duration);
 }
 
-
 fn alt_md5(s: &str) -> String {
     let mut hasher = Md5::new();
     hasher.input(s);
