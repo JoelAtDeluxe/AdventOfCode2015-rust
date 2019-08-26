@@ -26,6 +26,17 @@ fn alter_grid<T>(grid: &mut Vec<Vec<T>>, c1: Coordinate, c2: Coordinate, action:
     }
 }
 
+fn sum_grid<T>(grid: &Vec<Vec<T>>, interpreter: fn(&T)->i32) -> i32 {
+    let mut sum = 0;
+
+    for row in grid.iter() {
+        for cell in row.iter() {
+            sum += interpreter(cell);
+        }
+    }
+    return sum;
+}
+
 /////// Part 2 specific
 
 fn part2(contents: &str) {
@@ -35,20 +46,9 @@ fn part2(contents: &str) {
         process_step_part2(&mut grid, &line);
     }
 
-    let result = sum_grid(&grid);
+    let result = sum_grid(&grid, |x| *x as i32);
     println!("Number of lights lit: {}", result);
 
-}
-
-fn sum_grid(grid: &Vec<Vec<u32>>) -> u32 {
-    let mut sum = 0;
-
-    for row in grid.iter() {
-        for cell in row.iter() {
-            sum += cell;
-        }
-    }
-    return sum;
 }
 
 fn process_step_part2(grid: &mut Vec<Vec<u32>>, command: &str) {    
@@ -77,24 +77,9 @@ fn part1(contents: &str) {
         process_step(&mut grid, &line);
     }
 
-    let result = count_ons(&grid);
+    let result = sum_grid(&grid, |x| *x as i32);
     println!("Number of lights lit: {}", result);
 }
-
-
-fn count_ons(grid: &Vec<Vec<bool>>) -> u32 {
-    let mut count = 0;
-
-    for row in grid.iter() {
-        for cell in row.iter() {
-            if *cell {
-                count+= 1;
-            }
-        }
-    }
-    return count;
-}
-
 
 
 fn process_step(grid: &mut Vec<Vec<bool>>, command: &str) {    
