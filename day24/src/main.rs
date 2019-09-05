@@ -1,52 +1,53 @@
+use day24;
+use day24::ComboStatus;
 
 fn main() {
     let path = "input.txt";
     let data = std::fs::read_to_string(path).unwrap_or_else(|_| panic!("Failed to open: {}", path));
+    let do_part_2 = true;
 
     let packages = parse_input(&data);
-    let target_weight = packages.iter().sum::<u32>() / 3;
+    let target = if do_part_2 {
+        packages.iter().sum::<u32>() / 4
+    }
+    else {
+        packages.iter().sum::<u32>() / 3
+    };
 
-    // // test data
-    // let packages = vec![5, 5, 10, 15, 20];
-    // let target_weight = 25;
-
-    // test data 2
-    // let packages = vec![1,2,3,4,5, 7,8,9,10,11];
-    // let target_weight = 20;
-    
-    // part 1
-
-    let mut all_combos = Vec::with_capacity(3_000_000);
-    let num_combos = get_number_of_combos(packages.len());
-    for i in 1..num_combos {
-        let combo = get_combination(&packages, i);
+    //look for the minimal set by testing those combinations first
+    let mut ideal_set = Vec::new();
+    for i in 1..=packages.len() { //we can slim this down quite a bit
+        println!("Looking at combinations of size: {}", i);
+        let combo_numbers = day24::n_choose_m_combo_generator(packages.len(), i);
+        println!("\t\t (there are {} many of these)", combo_numbers.len());
+        let correct_sums:Vec<(usize, u32)> = combo_numbers
+            .iter()
+            .map(|combo| (*combo, sum_combination(&packages, *combo)) )
+            .filter(|(_, sum)| *sum == target)
+            .collect();
         
-        if combo.iter().sum::<u32>() == target_weight {
-            let alt_group = make_sub_set(&packages, &combo);
-            let num_alt_combos = get_number_of_combos(alt_group.len());
-            for j in 1..num_alt_combos {
-                let alt_combo = get_combination(&alt_group, j);
-                if alt_combo.iter().sum::<u32>() == target_weight {
-                    all_combos.push(combo);
-                    break;
-                }
-            }
+        if correct_sums.len() > 0 {
+            println!("Found correct sums using combinations of size: {}", i);
+            ideal_set = correct_sums;
+            break;
         }
     }
 
-    // println!("{:?}", all_combos);
+    // augment with quantum entanglement
+    let mut ideal_set: Vec<(usize, u32, u64)> = ideal_set
+        .into_iter()
+        .map(|(num, sum)| (num, sum, quantum_entanglement_for_combination(&packages, num) ))
+        .collect();
 
-    let ideal_size = all_combos.iter()
-        .map(|v| v.len())
-        .min().unwrap();
-    let lowest_qe = all_combos.iter()
-        .filter(|v| v.len() == ideal_size)
-        .map(find_quantum_entanglement)
-        .min().unwrap();
+    ideal_set.sort_by(|a, b| a.2.cmp(&b.2));
+    println!("min is: {}", ideal_set[0].2);
 
-    println!("Lowest QE is: {}", lowest_qe);
+    // for (num, sum, qe) in ideal_set.iter() { // TODO
+    //     // look at the opposite set for num
+    //     // check if some combination = target
+    //     // if so, stop -- this is the lowest qe for the lowest set.
+    // }
 
-    // println!("{:?}", all_combos)
 }
 
 fn parse_input(contents: &str) -> Vec<u32> {
@@ -56,50 +57,30 @@ fn parse_input(contents: &str) -> Vec<u32> {
         .collect()
 }
 
-fn make_sub_set(nums: &Vec<u32>, exclude: &Vec<u32>) -> Vec<u32> {
-    let mut rtn = Vec::with_capacity(nums.len() - exclude.len());
-
-    for v in nums.iter() {
-        if !exclude.contains(v) {
-            rtn.push(v.clone())
-        }
-    }
-    rtn
-}
-
-fn get_number_of_combos(v_len: usize) -> u32 {
-    (1 << v_len) as u32
-}
-
-fn get_combination(v: &Vec<u32>, n: u32) -> Vec<u32> {
-    let mut n = n;
-    let mut subset = Vec::with_capacity(v.len());
+fn sum_combination(v: &Vec<u32>, combo_number: usize) -> u32 {
+    let mut sum = 0;
+    let mut n = combo_number;
     let mut index = 0;
+    
     while n > 0 {
-        let include = n & 0x1;
-        n = n >> 1;
-        if include == 1 {
-            subset.push(v[index].clone());
+        if (n & 0x1) != 0 {
+            sum += v[index];
         }
+        n = n >> 1;
         index += 1;
     }
-    subset
+    sum
 }
 
-// fn get_combination(v: &Vec<u32>, n: u32) -> Vec<&u32> {
-//     let mut n = n;
-//     let mut subset = Vec::with_capacity(v.len());
-//     let mut index = 0;
-//     while n > 0 {
-//         let include = n & 0x1;
-//         n = n >> 1;
-//         if include == 1 {
-//             subset.push(&v[index]);
-//         }
-//         index += 1;
-//     }
-//     subset
-// }
+fn quantum_entanglement_for_combination(v: &Vec<u32>, combo_number: usize) -> u64 {
+    let mut qe = 1u64;
+
+    day24::binary_iter(combo_number, &mut |index| {
+        qe = qe * v[*index] as u64;
+    });
+
+    qe
+}
 
 fn find_quantum_entanglement(nums: &Vec<u32>) -> u32 {
     nums.iter().fold(1, |acc, item| acc * item)
