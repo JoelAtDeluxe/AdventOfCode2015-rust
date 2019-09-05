@@ -1,5 +1,4 @@
 use day24;
-use day24::ComboStatus;
 
 fn main() {
     let path = "input.txt";
@@ -59,16 +58,11 @@ fn parse_input(contents: &str) -> Vec<u32> {
 
 fn sum_combination(v: &Vec<u32>, combo_number: usize) -> u32 {
     let mut sum = 0;
-    let mut n = combo_number;
-    let mut index = 0;
-    
-    while n > 0 {
-        if (n & 0x1) != 0 {
-            sum += v[index];
-        }
-        n = n >> 1;
-        index += 1;
-    }
+
+    day24::binary_iter(combo_number, &mut |index| {
+        sum += v[*index];
+    });
+
     sum
 }
 
@@ -80,8 +74,4 @@ fn quantum_entanglement_for_combination(v: &Vec<u32>, combo_number: usize) -> u6
     });
 
     qe
-}
-
-fn find_quantum_entanglement(nums: &Vec<u32>) -> u32 {
-    nums.iter().fold(1, |acc, item| acc * item)
 }
