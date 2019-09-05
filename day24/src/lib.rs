@@ -10,7 +10,7 @@ pub fn n_choose_m_combo_generator(n: usize, m: usize) -> Vec<usize> { // TODO: s
     for _ in 0 .. m {
         last_set = next_set;
         next_set = HashMap::new();
-        for (idx, element) in last_set {
+        for (_, element) in last_set {
             let starting_point = element.clone();
             // this is going to put a bunch of junk in here
             for n_index in 0 .. n {
@@ -20,7 +20,7 @@ pub fn n_choose_m_combo_generator(n: usize, m: usize) -> Vec<usize> { // TODO: s
                 }
                 let mut modified = starting_point.clone();
                 modified[n_index] = 1;
-                let key = magic(&modified);
+                let key = vec_bin_to_num(&modified);
                 next_set.entry(key).or_insert(modified);
                 // next_set.insert(key, modified);
             }
@@ -30,7 +30,8 @@ pub fn n_choose_m_combo_generator(n: usize, m: usize) -> Vec<usize> { // TODO: s
     next_set.keys().map(|k| k.clone()).collect()
 }
 
-pub fn magic(digits: &Vec<u8>) -> usize { // TODO: rename
+
+pub fn vec_bin_to_num(digits: &Vec<u8>) -> usize { // TODO: rename
     let mut sum = 0;
 
     for (idx, v) in digits.iter().enumerate() {
@@ -40,6 +41,22 @@ pub fn magic(digits: &Vec<u8>) -> usize { // TODO: rename
     }
 
     sum
+}
+
+pub fn make_subset(set: &Vec<u32>, subset_binary: usize) -> Vec<u32> {
+    let mut rtn = Vec::new();
+    
+    binary_iter(subset_binary, &mut |index| rtn.push(set[*index]));
+
+    rtn
+}
+
+pub fn count_ones(num: usize) -> usize{
+    let mut count = 0;
+
+    binary_iter(num, &mut |_| count += 1);
+
+    count
 }
 
 pub fn binary_iter<T> (number: usize, func: &mut T) 
